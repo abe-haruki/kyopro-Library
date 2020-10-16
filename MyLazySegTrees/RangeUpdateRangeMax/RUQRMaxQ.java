@@ -1,0 +1,59 @@
+class LazysegTreemax{
+		int size;
+		long[] dat;
+		long[] lazy;
+		long INF=-Integer.MAX_VALUE;
+		public LazysegTreemax(int n) {
+			int n_=1;
+			while (n_<n) {
+				n_*=2;
+			}
+			size=n_;
+			dat=new long[2*n_-1];
+			lazy=new long[2*n_-1];
+			java.util.Arrays.fill(dat, INF);
+			java.util.Arrays.fill(lazy, INF);
+		}
+		void propagate(int k,int l,int r) {
+			if (lazy[k]!=INF) {
+				dat[k] = lazy[k];
+				if(r - l > 1) {
+		            lazy[2*k+1] = lazy[k];
+		            lazy[2*k+2] = lazy[k];
+		        }
+		        lazy[k] = INF;
+			}
+		}
+		void update(int a,int b,long x,int k,int l,int r) {//a<=x<b加算　add(...,0,0,seg.size)で呼ぶ
+			this.propagate(k,l,r);
+			if (a<=l&&r<=b) {
+				lazy[k]=x;
+				this.propagate(k,l,r);
+			}
+			else if (l<b&&a<r) {//交わっている場合
+				this.update(a, b, x, k*2+1,l,(l+r)/2);
+				this.update(a, b, x, k*2+2, (l+r)/2, r);
+				dat[k] = Math.max(dat[2*k+1],dat[2*k+2]);
+			}
+		}
+		void apply(int a,int b,long x) {
+			this.update(a, b, x, 0, 0, size);
+		}
+		long getmax(int a,int b,int k,int l,int r) {//kが節点番号,l rがその節点番号の範囲
+			if (r<=a||b<=l) {
+				return INF;
+			}
+			this.propagate(k, l, r);
+			if (a<=l&&r<=b) {
+				return dat[k];
+			}
+			else {
+				long vl=this.getmax(a, b, k*2+1,l,(l+r)/2);
+				long vr=this.getmax(a, b, k*2+2, (l+r)/2, r);
+				return (Math.max(vl, vr));
+			}
+		}//getsum(x, y, 0, 0, size)で呼ぶ
+		long prod(int a,int b) {
+			return getmax(a, b, 0, 0, size);
+		}
+	}
